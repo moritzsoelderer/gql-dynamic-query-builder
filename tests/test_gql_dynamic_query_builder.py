@@ -1,6 +1,6 @@
 import pytest
 
-from src.gql_dynamic_query_builder import GQLDynamicQueryBuilder
+from src.api.gql_dynamic_query_builder import GQLDynamicQueryBuilder
 from tests.conftest import ALL_QUERIES
 
 
