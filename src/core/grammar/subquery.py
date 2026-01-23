@@ -30,7 +30,7 @@ FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE = original_text_for(
     ZeroOrMore(SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy())
 ) + Literal(')')
 
-GENERIC_SUBQUERY_BODY = Literal('{') + OneOrMore(Word(alphanums)) + Literal('}')
+GENERIC_SUBQUERY_BODY = Literal('{') + OneOrMore(Word(alphanums + '_')) + Literal('}')
 
 GENERIC_SUBQUERY = (
     Word(alphas + '_')
@@ -44,14 +44,16 @@ GENERIC_SUBQUERY = (
 
 
 def get_table_specific_subquery(
-    table_name: str, where_clause: ParserElement
+    table_name: str, where_clause: ParserElement, no_filters: ParserElement
 ) -> ParserElement:
     return (
         Literal(table_name)
-        + Optional(
-            PRECEDING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
-            + where_clause
-            + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
-        )
+        + (
+            (
+                PRECEDING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
+                + where_clause
+                + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
+            )
+            | no_filters)
         + GENERIC_SUBQUERY_BODY.copy()
     )
