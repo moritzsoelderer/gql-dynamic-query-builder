@@ -1,0 +1,27 @@
+[project]
+name = "gql-dynamic-query-builder"
+version = "0.1.0"
+description = "Dynamic GraphQL query builder"
+requires-python = ">=3.10"
+
+dependencies = [
+    "pyparsing>=3.3.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+lint.select = ["E", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "single"
