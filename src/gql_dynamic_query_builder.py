@@ -9,10 +9,14 @@ class GQLDynamicQueryBuilder:
         self.where_clauses: dict[str, str] = {}
         self.processed_query = query
 
-    def with_where_clause(self, field_name: str, value: str | int | list, operation: str | list[str]):
+    def with_where_clause(
+        self, field_name: str, value: str | int | list, operation: str | list[str]
+    ):
         pass
 
-    def with_where_clauses(self, clauses: dict[str, str], overwrite: bool = False) -> GQLDynamicQueryBuilder:
+    def with_where_clauses(
+        self, clauses: dict[str, str], overwrite: bool = False
+    ) -> GQLDynamicQueryBuilder:
         if overwrite:
             self.where_clauses = dict(clauses)
         else:
@@ -23,7 +27,7 @@ class GQLDynamicQueryBuilder:
         for table_name, where_clauses in self.where_clauses.items():
             query_grammar = prepare_query_grammar(table_name, where_clauses)
             self.processed_query = query_grammar.transform_string(self.processed_query)
-            print("Processed Query", self.processed_query)
+            print('Processed Query', self.processed_query)
 
         return self.processed_query
 
@@ -65,8 +69,8 @@ if __name__ == '__main__':
     """
 
     builder = GQLDynamicQueryBuilder(query_without_where_with_limit)
-    builder = builder.with_where_clauses({"products": 'name: {_eq: "hasbro"}'})
-    builder = builder.with_where_clauses({"resources": 'price: {_eq: 10}'})
+    builder = builder.with_where_clauses({'products': 'name: {_eq: "hasbro"}'})
+    builder = builder.with_where_clauses({'resources': 'price: {_eq: 10}'})
 
     final_query = builder.build()
     print(final_query)
