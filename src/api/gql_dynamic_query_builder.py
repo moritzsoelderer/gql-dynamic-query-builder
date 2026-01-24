@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import json
 
-from core.helpers import recursive_dict_merge, construct_operation_value_string, construct_where_clause_string
+from core.helpers import (
+    construct_operation_value_string,
+    construct_where_clause_string,
+    recursive_dict_merge,
+)
 from src.core.grammar.query import prepare_query_grammar
 
 
@@ -65,7 +69,9 @@ class GQLDynamicQueryBuilder:
             if isinstance(operation, list):
                 raise TypeError('Operation should be scalar if value is scalar')
             self.update_where_clauses(
-                table_name, field_name, f'{{{construct_operation_value_string(value, operation)}}}'
+                table_name,
+                field_name,
+                f'{{{construct_operation_value_string(value, operation)}}}',
             )
 
         return self
