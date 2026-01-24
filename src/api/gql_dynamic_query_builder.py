@@ -84,6 +84,5 @@ class GQLDynamicQueryBuilder:
             where_clauses = construct_where_clause_string(nested_and_explicit_where_clauses)
             query_grammar = prepare_query_grammar(table_name, where_clauses)
             self.processed_query = query_grammar.transform_string(self.processed_query)
-            print('Processed Query', self.processed_query)
 
         return self.processed_query
