@@ -1,7 +1,7 @@
 import pytest
 
 from api.gql_dynamic_query_builder import GQLDynamicQueryBuilder
-from tests.conftest import ALL_QUERIES
+from tests.conftest import ALL_QUERIES, is_valid_gql
 
 
 class TestGQLDynamicQueryBuilderNestedFieldsAndExplicitClauses:
@@ -17,6 +17,7 @@ class TestGQLDynamicQueryBuilderNestedFieldsAndExplicitClauses:
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {name: {_eq: "test"}}' in result
         assert 'subquery_to_test_add_body_arg: {_eq : "also_test"}' in result
+        assert is_valid_gql(result)
 
     @pytest.mark.parametrize("query,subquery_to_test", ALL_QUERIES)
     def test_build_with_api_where_clause_one_op_many_values_nested_field_explicit_clause(self, query, subquery_to_test):
@@ -28,6 +29,7 @@ class TestGQLDynamicQueryBuilderNestedFieldsAndExplicitClauses:
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {name: {_in: ["test", "hallo"]}}' in result
         assert 'subquery_to_test_add_body_arg: {_eq : "also_test"}' in result
+        assert is_valid_gql(result)
 
 
     @pytest.mark.parametrize("query,subquery_to_test", ALL_QUERIES)
@@ -41,3 +43,4 @@ class TestGQLDynamicQueryBuilderNestedFieldsAndExplicitClauses:
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {name: {_gte: "test" _lt: "hallo"}}' in result
         assert 'subquery_to_test_add_body_arg: {_eq : "also_test"}' in result
+        assert is_valid_gql(result)

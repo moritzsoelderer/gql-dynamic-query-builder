@@ -1,7 +1,7 @@
 import pytest
 
 from api.gql_dynamic_query_builder import GQLDynamicQueryBuilder
-from tests.conftest import ALL_QUERIES
+from tests.conftest import ALL_QUERIES, is_valid_gql
 
 
 class TestGQLDynamicQueryBuilderExplicitClauses:
@@ -15,3 +15,4 @@ class TestGQLDynamicQueryBuilderExplicitClauses:
 
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {_eq : "test"}' in result
+        assert is_valid_gql(result)

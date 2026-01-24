@@ -1,7 +1,8 @@
 import pytest
 
 from src.api.gql_dynamic_query_builder import GQLDynamicQueryBuilder
-from tests.conftest import ALL_QUERIES
+from tests.conftest import ALL_QUERIES, is_valid_gql
+
 
 class TestGQLDynamicQueryBuilderSimpleFieldsAndExplicitClauses:
 
@@ -16,6 +17,7 @@ class TestGQLDynamicQueryBuilderSimpleFieldsAndExplicitClauses:
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {_eq: "test"}' in result
         assert 'subquery_to_test_add_body_arg: {_eq : "also_test"}' in result
+        assert is_valid_gql(result)
 
 
     @pytest.mark.parametrize("query,subquery_to_test", ALL_QUERIES)
@@ -28,6 +30,7 @@ class TestGQLDynamicQueryBuilderSimpleFieldsAndExplicitClauses:
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {_in: ["test", "hallo"]}' in result
         assert 'subquery_to_test_add_body_arg: {_eq : "also_test"}' in result
+        assert is_valid_gql(result)
 
 
     @pytest.mark.parametrize("query,subquery_to_test", ALL_QUERIES)
@@ -40,3 +43,4 @@ class TestGQLDynamicQueryBuilderSimpleFieldsAndExplicitClauses:
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {_gte: "test" _lt: "hallo"}' in result
         assert 'subquery_to_test_add_body_arg: {_eq : "also_test"}' in result
+        assert is_valid_gql(result)

@@ -1,7 +1,7 @@
 import pytest
 
 from api.gql_dynamic_query_builder import GQLDynamicQueryBuilder
-from tests.conftest import ALL_QUERIES
+from tests.conftest import ALL_QUERIES, is_valid_gql
 
 
 class TestGQLDynamicQueryBuilderNestedFields:
@@ -15,6 +15,7 @@ class TestGQLDynamicQueryBuilderNestedFields:
 
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {name: {_eq: "test"}}' in result
+        assert is_valid_gql(result)
 
 
     @pytest.mark.parametrize("query,subquery_to_test", ALL_QUERIES)
@@ -25,6 +26,7 @@ class TestGQLDynamicQueryBuilderNestedFields:
 
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {name: {_in: ["test", "hallo"]}}' in result
+        assert is_valid_gql(result)
 
 
     @pytest.mark.parametrize("query,subquery_to_test", ALL_QUERIES)
@@ -43,3 +45,4 @@ class TestGQLDynamicQueryBuilderNestedFields:
 
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {name: {_gte: "test" _lt: "hallo"}}' in result
+        assert is_valid_gql(result)
