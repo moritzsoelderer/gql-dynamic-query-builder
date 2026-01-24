@@ -2,30 +2,8 @@ from __future__ import annotations
 
 import json
 
+from core.helpers import recursive_dict_merge, construct_operation_value_string, construct_where_clause_string
 from src.core.grammar.query import prepare_query_grammar
-
-
-def create_key_value_pair(value: str | int | list, operation: str) -> str:
-    if operation in ['_like', '_ilike']:
-        value = f'"%{value}%"'
-    elif isinstance(value, str):
-        value = f'"{value}"'
-
-    return f'{operation}: {value}'
-
-
-def construct_where_clause_string(nested_anc_explicit_where_clauses: dict) -> str:
-    opt_explicit_clause = nested_anc_explicit_where_clauses.get('explicit_clause', None)
-    nested_field_clauses = [opt_explicit_clause] if opt_explicit_clause else []
-    for key, value in nested_anc_explicit_where_clauses.items():
-        if isinstance(value, dict):
-            nested_field_clauses.append(
-                f'{key}: {{{construct_where_clause_string(value)}}}'
-            )
-        else:
-            nested_field_clauses.append(value)
-
-    return ' '.join(nested_field_clauses)
 
 
 class GQLDynamicQueryBuilder:
@@ -45,11 +23,12 @@ class GQLDynamicQueryBuilder:
         fields = field_name.split('.')
 
         clause_dict = {fields[-1]: f'{fields[-1]}: {clause}'}
-        for field in fields[:-1]:
+        for field in reversed(fields[:-1]):
             clause_dict = {field: clause_dict}
 
-        current_table_clauses.update(clause_dict)
+        recursive_dict_merge(current_table_clauses, clause_dict)
         self.where_clauses[table_name] = current_table_clauses
+        print(self.where_clauses)
 
     def with_where_clause(
         self,
@@ -71,7 +50,7 @@ class GQLDynamicQueryBuilder:
         if isinstance(value, list):
             if isinstance(operation, list):
                 pairs = [
-                    create_key_value_pair(v, o)
+                    construct_operation_value_string(v, o)
                     for v, o in zip(value, operation, strict=True)
                 ]
                 self.update_where_clauses(
@@ -86,7 +65,7 @@ class GQLDynamicQueryBuilder:
             if isinstance(operation, list):
                 raise TypeError('Operation should be scalar if value is scalar')
             self.update_where_clauses(
-                table_name, field_name, f'{{{create_key_value_pair(value, operation)}}}'
+                table_name, field_name, f'{{{construct_operation_value_string(value, operation)}}}'
             )
 
         return self

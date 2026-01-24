@@ -1,0 +1,33 @@
+def construct_operation_value_string(value: str | int | list, operation: str) -> str:
+    if operation in ['_like', '_ilike']:
+        value = f'"%{value}%"'
+    elif isinstance(value, str):
+        value = f'"{value}"'
+
+    return f'{operation}: {value}'
+
+
+def construct_where_clause_string(nested_anc_explicit_where_clauses: dict) -> str:
+    nested_field_clauses = []
+    for key, value in nested_anc_explicit_where_clauses.items():
+        if isinstance(value, dict):
+            nested_field_clauses.append(
+                f'{key}: {{{construct_where_clause_string(value)}}}'
+            )
+        else:
+            nested_field_clauses.append(value)
+
+    return ' '.join(nested_field_clauses)
+
+
+def recursive_dict_merge(dict_to_merge_into: dict, dict_to_merge: dict) -> dict:
+    for k, v in dict_to_merge.items():
+        if (
+            k in dict_to_merge_into
+            and isinstance(dict_to_merge_into[k], dict)
+            and isinstance(v, dict)
+        ):
+            recursive_dict_merge(dict_to_merge_into[k], v)
+        else:
+            dict_to_merge_into[k] = v
+    return dict_to_merge_into
