@@ -17,4 +17,51 @@ as input and inserts the respective clauses if a value is presented, and does no
 This avoids nasty, error-prone, string concatenations while avoiding heavy-weight ASTs and the necessity
 of schema declarations as with [gql-DSL](https://gql.readthedocs.io/en/v3.0.0/modules/dsl.html).
 
+## Usage
 
+All a user should be interacting with is located in the `src.api` package.
+As of now it only contains the `GQLDynamicQueryBuilder` which is the heart of the project and
+provides all the necessary functionality. To extend a query by an optional where clause one can do the
+following:
+
+~~~
+    query = """
+        query TestQuery {
+            product {
+                name
+                brand
+            }
+        }
+    """
+    
+    builder = GQLDynamicQueryBuilder(query)
+    builder = builder.with_where_clause(
+                table_name='product', 
+                field_name='name', 
+                value='tomato', 
+                operation='_ilike'
+              )
+    result = builder.build() # returns the transformed query as a string
+~~~
+
+This also works for queries with existing where clauses and other query parameters (e.g. limit).
+To access nested fields, simply use '.' as the delimiter:
+
+~~~
+    builder.with_where_clause(
+        'product', 
+        'brand.name', # will build brand { name: ...
+        'ABC', 
+        '_eq'
+    )
+    result = builder.build()
+~~~
+
+As a fallback also explicit where clauses are supported via `table_name: clause` dictionaries:
+
+~~~
+    builder.with_where_clauses(
+        {'product': 'name: {_ilike : "tomato"}'}
+    )
+    result = builder.build()
+~~~
