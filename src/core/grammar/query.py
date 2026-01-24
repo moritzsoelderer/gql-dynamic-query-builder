@@ -12,8 +12,9 @@ from pyparsing import (
 )
 
 from src.core.grammar.parse_actions import (
+    create_filter_section_with_where_clauses,
     extend_where_clauses,
-    inject_new_where_clauses, create_filter_section_with_where_clauses,
+    inject_new_where_clauses,
 )
 from src.core.grammar.subquery import GENERIC_SUBQUERY, get_table_specific_subquery
 from src.core.grammar.where_clause import get_new_where_clause_and_content
@@ -37,7 +38,9 @@ def prepare_query_grammar(table_name: str, where_clauses: str) -> ParserElement:
         lambda tokens: extend_where_clauses(tokens, where_clauses)
     )
     no_where_clause.set_parse_action(lambda: inject_new_where_clauses(where_clauses))
-    no_filters.set_parse_action(lambda: create_filter_section_with_where_clauses(where_clauses))
+    no_filters.set_parse_action(
+        lambda: create_filter_section_with_where_clauses(where_clauses)
+    )
 
     return (
         QUERY_KEYWORD_AND_NAME.copy()

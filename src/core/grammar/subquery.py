@@ -31,20 +31,20 @@ FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE = original_text_for(
 ) + Literal(')')
 
 PARENTHESES_AND_ONE_OR_MORE_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE = (
- Literal('(') + SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy() + Literal(')')
+    Literal('(') + SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy() + Literal(')')
 )
 
 WHERE_CLAUSE_WRAPPED_IN_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE = (
-        PRECEDING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
-        + WHERE_CLAUSE.copy()
-        + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
+    PRECEDING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
+    + WHERE_CLAUSE.copy()
+    + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
 )
 
 GENERIC_SUBQUERY_BODY = Literal('{') + OneOrMore(Word(alphanums + '_')) + Literal('}')
 
 GENERIC_SUBQUERY = (
-    Word(alphas + '_') +
-    Optional(
+    Word(alphas + '_')
+    + Optional(
         WHERE_CLAUSE_WRAPPED_IN_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE
         | PARENTHESES_AND_ONE_OR_MORE_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE
     )
@@ -63,6 +63,7 @@ def get_table_specific_subquery(
                 + where_clause
                 + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
             )
-            | no_filters)
+            | no_filters
+        )
         + GENERIC_SUBQUERY_BODY.copy()
     )
