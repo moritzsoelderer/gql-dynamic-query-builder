@@ -32,7 +32,8 @@ def recursive_dict_merge(dict_to_merge_into: dict, dict_to_merge: dict) -> dict:
             dict_to_merge_into[k] = v
     return dict_to_merge_into
 
-def handle_skip_if_none(skip_if_none: bool, to_return = None):
+
+def handle_skip_if_none(skip_if_none: bool, to_return=None):
     if skip_if_none:
         return to_return
     else:

@@ -5,7 +5,8 @@ import json
 from core.helpers import (
     construct_operation_value_string,
     construct_where_clause_string,
-    recursive_dict_merge, handle_skip_if_none,
+    handle_skip_if_none,
+    recursive_dict_merge,
 )
 from src.core.grammar.query import prepare_query_grammar
 
@@ -98,13 +99,20 @@ class GQLDynamicQueryBuilder:
         else:
             for table_name, clause in clauses.items():
                 if self.filter_parameters.get(table_name, None):
-                    self.filter_parameters[table_name].update({'explicit_clause': clause})
+                    self.filter_parameters[table_name].update(
+                        {'explicit_clause': clause}
+                    )
                 else:
-                    self.filter_parameters.update({table_name: {'explicit_clause': clause}})
+                    self.filter_parameters.update(
+                        {table_name: {'explicit_clause': clause}}
+                    )
         return self
 
     def build(self):
-        for table_name, nested_and_explicit_where_clauses in self.filter_parameters.items():
+        for (
+            table_name,
+            nested_and_explicit_where_clauses,
+        ) in self.filter_parameters.items():
             where_clauses = construct_where_clause_string(
                 nested_and_explicit_where_clauses
             )
