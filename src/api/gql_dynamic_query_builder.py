@@ -5,7 +5,7 @@ import json
 from core.helpers import (
     construct_operation_value_string,
     construct_where_clause_string,
-    recursive_dict_merge,
+    recursive_dict_merge, handle_skip_if_none,
 )
 from src.core.grammar.query import prepare_query_grammar
 
@@ -35,12 +35,16 @@ class GQLDynamicQueryBuilder:
         print(self.filter_parameters)
 
     def with_limit(self, table_name: str, limit: int, skip_if_none: bool = False):
-        if self.filter_parameters.get(table_name, None):
+        if limit is None:
+            handle_skip_if_none(skip_if_none)
+        elif self.filter_parameters.get(table_name, None):
             self.filter_parameters[table_name].update({'limit': f'limit: {limit}'})
         else:
             self.filter_parameters.update({table_name: {'limit': f'limit: {limit}'}})
 
-    def with_offset(self, table_name: str, offset: int):
+    def with_offset(self, table_name: str, offset: int, skip_if_none: bool = False):
+        if offset is None:
+            handle_skip_if_none(skip_if_none)
         if self.filter_parameters.get(table_name, None):
             self.filter_parameters[table_name].update({'offset': f'offset: {offset}'})
         else:
@@ -55,13 +59,7 @@ class GQLDynamicQueryBuilder:
         skip_if_none: bool = False,
     ):
         if value is None:
-            if skip_if_none:
-                return self
-            else:
-                raise ValueError(
-                    'Encountered None value in with_where_clause - '
-                    'if you want to skip it set skip_if_none=True'
-                )
+            return handle_skip_if_none(skip_if_none, self)
 
         if isinstance(value, list):
             if isinstance(operation, list):
