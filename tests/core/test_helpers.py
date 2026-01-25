@@ -4,6 +4,7 @@ from core.helpers import (
     construct_operation_value_string,
     construct_where_clause_string,
     recursive_dict_merge,
+    handle_skip_if_none
 )
 
 
@@ -80,3 +81,12 @@ class TestHelpers:
         result = recursive_dict_merge(dict_to_merge_into, dict_to_merge)
 
         assert result == expected
+
+    def test_handle_skip_if_none(self):
+        some_string = 'some_string'
+        result = handle_skip_if_none(True, some_string)
+
+        assert result == some_string
+
+        with pytest.raises(ValueError):
+            handle_skip_if_none(False, some_string)
