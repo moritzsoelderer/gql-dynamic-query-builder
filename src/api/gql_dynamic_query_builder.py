@@ -13,15 +13,15 @@ from src.core.grammar.query import prepare_query_grammar
 class GQLDynamicQueryBuilder:
     def __init__(self, query: str):
         self.query: str = query
-        self.where_clauses: dict[str, dict[str, dict | str]] = {}
+        self.filter_parameters: dict[str, dict[str, dict | str]] = {}
         self.processed_query = query
 
     def update_where_clauses(
         self, table_name: str, field_name: str, clause: str
     ) -> None:
         current_table_clauses = (
-            self.where_clauses[table_name]
-            if self.where_clauses.get(table_name, None)
+            self.filter_parameters[table_name]
+            if self.filter_parameters.get(table_name, None)
             else {}
         )
         fields = field_name.split('.')
@@ -31,8 +31,20 @@ class GQLDynamicQueryBuilder:
             clause_dict = {field: clause_dict}
 
         recursive_dict_merge(current_table_clauses, clause_dict)
-        self.where_clauses[table_name] = current_table_clauses
-        print(self.where_clauses)
+        self.filter_parameters[table_name] = current_table_clauses
+        print(self.filter_parameters)
+
+    def with_limit(self, table_name: str, limit: int, skip_if_none: bool = False):
+        if self.filter_parameters.get(table_name, None):
+            self.filter_parameters[table_name].update({'limit': f'limit: {limit}'})
+        else:
+            self.filter_parameters.update({table_name: {'limit': f'limit: {limit}'}})
+
+    def with_offset(self, table_name: str, offset: int):
+        if self.filter_parameters.get(table_name, None):
+            self.filter_parameters[table_name].update({'offset': f'offset: {offset}'})
+        else:
+            self.filter_parameters.update({table_name: {'offset': f'offset: {offset}'}})
 
     def with_where_clause(
         self,
@@ -84,17 +96,17 @@ class GQLDynamicQueryBuilder:
                 table_name: {'explicit_clause': clause}
                 for table_name, clause in clauses.items()
             }
-            self.where_clauses = transformed_clauses
+            self.filter_parameters = transformed_clauses
         else:
             for table_name, clause in clauses.items():
-                if self.where_clauses.get(table_name, None):
-                    self.where_clauses[table_name].update({'explicit_clause': clause})
+                if self.filter_parameters.get(table_name, None):
+                    self.filter_parameters[table_name].update({'explicit_clause': clause})
                 else:
-                    self.where_clauses.update({table_name: {'explicit_clause': clause}})
+                    self.filter_parameters.update({table_name: {'explicit_clause': clause}})
         return self
 
     def build(self):
-        for table_name, nested_and_explicit_where_clauses in self.where_clauses.items():
+        for table_name, nested_and_explicit_where_clauses in self.filter_parameters.items():
             where_clauses = construct_where_clause_string(
                 nested_and_explicit_where_clauses
             )
