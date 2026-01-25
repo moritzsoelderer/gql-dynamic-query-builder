@@ -39,7 +39,8 @@ following:
                 table_name='product', 
                 field_name='name', 
                 value='tomato', 
-                operation='_ilike'
+                operation='_ilike',
+                skip_if_none=True
               )
     result = builder.build() # returns the transformed query as a string
 ~~~
@@ -52,10 +53,16 @@ To access nested fields, simply use '.' as the delimiter:
         'product', 
         'brand.name', # will build brand { name: ...
         'ABC', 
-        '_eq'
+        '_eq',
+        skip_if_none=True
     )
     result = builder.build()
 ~~~
+
+Furthermore, it is also possible to provide the following to `with_where_clause`:
+- `values: list` and `operation: str` which allows for set-operations like `_in`
+- `values: list` and `operation: list[str]` which allows for multiple operations for the same field
+  (e.g. `timestamp {_gte: <ts1> lt: <ts2>}`)
 
 As a fallback also explicit where clauses are supported via `table_name: clause` dictionaries:
 
