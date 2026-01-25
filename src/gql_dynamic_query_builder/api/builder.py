@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import json
 
-from core.helpers import (
+from gql_dynamic_query_builder.core.helpers import (
     construct_operation_value_string,
     construct_where_clause_string,
     handle_skip_if_none,
     recursive_dict_merge,
 )
-from src.core.grammar.query import prepare_query_grammar
+from gql_dynamic_query_builder.core.grammar.query import prepare_query_grammar
 
 
 class GQLDynamicQueryBuilder:

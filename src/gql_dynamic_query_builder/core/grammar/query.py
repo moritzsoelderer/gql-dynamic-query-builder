@@ -11,13 +11,13 @@ from pyparsing import (
     original_text_for,
 )
 
-from src.core.grammar.parse_actions import (
+from gql_dynamic_query_builder.core.grammar.parse_actions import (
     create_filter_section_with_where_clauses,
     extend_where_clauses,
     inject_new_where_clauses,
 )
-from src.core.grammar.subquery import GENERIC_SUBQUERY, get_table_specific_subquery
-from src.core.grammar.where_clause import get_new_where_clause_and_content
+from gql_dynamic_query_builder.core.grammar.subquery import GENERIC_SUBQUERY, get_table_specific_subquery
+from gql_dynamic_query_builder.core.grammar.where_clause import get_new_where_clause_and_content
 
 QUERY_KEYWORD_AND_NAME = original_text_for(Literal('query') + Word(alphas + '_'))
 QUERY_PARAMETER = Literal('$') + Word(alphas + '_') + Literal(':') + Word(alphas)

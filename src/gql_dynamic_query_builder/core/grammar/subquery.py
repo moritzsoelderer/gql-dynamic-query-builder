@@ -12,7 +12,7 @@ from pyparsing import (
     original_text_for,
 )
 
-from src.core.grammar.where_clause import WHERE_CLAUSE
+from gql_dynamic_query_builder.core.grammar.where_clause import WHERE_CLAUSE
 
 SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE = (
     ~Keyword('where')

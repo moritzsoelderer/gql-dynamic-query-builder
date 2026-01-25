@@ -1,6 +1,6 @@
 import pytest
 
-from api.gql_dynamic_query_builder import GQLDynamicQueryBuilder
+from gql_dynamic_query_builder.api.builder import GQLDynamicQueryBuilder
 from tests.conftest import ALL_QUERIES, is_valid_gql
 
 
