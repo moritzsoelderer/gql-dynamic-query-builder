@@ -1,8 +1,12 @@
 [project]
 name = "gql-dynamic-query-builder"
-version = "0.1.0"
+authors = [{name="msldrr", email="moritz.soelderer@icloud.com"}]
+version = "1.0.0"
 description = "Dynamic GraphQL query builder"
 requires-python = ">=3.10"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
 
 dependencies = [
     "pyparsing>=3.3.2",
@@ -13,6 +17,9 @@ dev = [
     "pytest>=8.0",
     "ruff",
 ]
+
+[tool.poetry]
+packages = [{ include = "core", from = "src" }]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
