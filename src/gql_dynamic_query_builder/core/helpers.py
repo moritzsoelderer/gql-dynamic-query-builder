@@ -19,6 +19,13 @@ def construct_where_clause_string(nested_anc_explicit_where_clauses: dict) -> st
 
     return ' '.join(nested_field_clauses)
 
+def construct_filter_parameters_except_where_clause_string(limit: int | None, offset: int | None) -> str:
+    limit_clause = f'limit: {limit}' if limit else None
+
+    offset_clause = f'offset: {offset}' if offset else None
+    filter_params_except_where_clause_string = f' {' '.join([c for c in [offset_clause, limit_clause] if c is not None])} '
+    return filter_params_except_where_clause_string
+
 
 def recursive_dict_merge(dict_to_merge_into: dict, dict_to_merge: dict) -> dict:
     for k, v in dict_to_merge.items():
