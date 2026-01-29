@@ -21,7 +21,7 @@ of schema declarations as with [gql-DSL](https://gql.readthedocs.io/en/v3.0.0/mo
 
 All a user should be interacting with is located in the `src.api` package.
 As of now it only contains the `GQLDynamicQueryBuilder` which is the heart of the project and
-provides all the necessary functionality. To extend a query by an optional where clause one can do the
+provides all the necessary functionality, while `api.dsl` provides a more user-friendly and convenient wrapper around the builder, as described [here](#dsl). To extend a query by an optional where clause one can do the
 following:
 
 ~~~
@@ -62,7 +62,7 @@ To access nested fields, simply use '.' as the delimiter:
 Furthermore, it is also possible to provide the following to `with_where_clause`:
 - `values: list` and `operation: str` which allows for set-operations like `_in`
 - `values: list` and `operation: list[str]` which allows for multiple operations for the same field
-  (e.g. `timestamp {_gte: <ts1> lt: <ts2>}`)
+  (e.g. `timestamp {_gte: <ts1> _lt: <ts2>}`)
 
 As a fallback also explicit where clauses are supported via `table_name: clause` dictionaries:
 
@@ -72,3 +72,40 @@ As a fallback also explicit where clauses are supported via `table_name: clause`
     )
     result = builder.build()
 ~~~
+
+### DSL
+
+Since version `1.1.0` a more user-friendly DSL is provided under `api.dsl`.
+The DSL is a wrapper around the builder pattern that enables a continuous flow of information, such as the table
+name for which a filter is to be set. E.g. look at this builder-based query:
+
+~~~
+    result = (GQLDynamicQueryBuilder(query)
+                  .with_where_clause('product', 'name', ['a', 'b', 'c'], '_in', skip_if_none=True)
+                  .with_offset('product', 15)
+                  .with_limit('product', 25)
+                  .with_where_clause('product', 'price', 5, '_gte')
+                  ).build()
+~~~
+
+All function calls in the above examples return a `GQLDynamicQueryBuilder` object, whose
+state is modified along the way. Thereby, the table name is repeated 4 times and the code
+is only marginally readable. Using the DSL on the other hand the same functionality can be achieved
+through the following:
+
+~~~
+    result = (dynamic_query(query).table('subquery_to_test')
+                  .where('test', is_optional=True).
+                  _in(['a', 'b', 'c'])
+                  .offset(15)
+                  .limit(25)
+                  .where('test2')
+                  ._gte(5)
+                  .build()
+                  )
+~~~
+
+This way the query construction becomes much more readable and concise.
+Furthermore, the method chaining is guarded by the type system, i.e.
+there is no need to worry to e.g. chain `build()` to a `where()` as the dsl
+is designed to only allow cohesive queries.
