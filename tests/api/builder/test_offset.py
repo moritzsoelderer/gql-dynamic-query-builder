@@ -4,14 +4,14 @@ from gql_dynamic_query_builder.api.builder import GQLDynamicQueryBuilder
 from tests.conftest import ALL_QUERIES, is_valid_gql
 
 
-class TestGQLDynamicQueryBuilderLimit:
+class TestGQLDynamicQueryBuilderOffset:
     @pytest.mark.parametrize('query,subquery_to_test', ALL_QUERIES)
-    def test_limit(self, query, subquery_to_test):
+    def test_offset(self, query, subquery_to_test):
         builder = GQLDynamicQueryBuilder(query)
 
-        builder.with_limit('subquery_to_test', 10)
+        builder.with_offset('subquery_to_test', 10)
         result = builder.build()
 
         assert subquery_to_test not in result
-        assert 'limit: 10' in result
+        assert 'offset: 10' in result
         assert is_valid_gql(result)
