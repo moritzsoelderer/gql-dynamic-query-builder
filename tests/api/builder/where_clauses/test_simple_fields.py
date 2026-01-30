@@ -16,8 +16,6 @@ class TestGQLDynamicQueryBuilderSimpleFields:
         )
         result = builder.build()
 
-        print(result)
-
         assert subquery_to_test not in result
         assert 'subquery_to_test_body_arg: {_eq: "test"}' in result
         assert is_valid_gql(result)

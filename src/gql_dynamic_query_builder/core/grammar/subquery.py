@@ -9,7 +9,7 @@ from pyparsing import (
     ZeroOrMore,
     alphanums,
     alphas,
-    original_text_for, MatchFirst,
+    original_text_for,
 )
 
 from gql_dynamic_query_builder.core.grammar.where_clause import WHERE_CLAUSE
@@ -53,15 +53,19 @@ GENERIC_SUBQUERY = (
 
 
 def get_table_specific_subquery(
-    table_name: str, where_clause: ParserElement, filter_parameters_except_where: ParserElement, no_filters: ParserElement
+    table_name: str,
+    where_clause: ParserElement,
+    filter_parameters_except_where: ParserElement,
+    no_filters: ParserElement,
 ) -> ParserElement:
     return (
         Literal(table_name)
         + (
             (
-                    PRECEDING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
-                    + where_clause + filter_parameters_except_where
-                    + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
+                PRECEDING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
+                + where_clause
+                + filter_parameters_except_where
+                + FOLLOWING_SUBQUERY_FILTERS_EXCLUDING_WHERE_CLAUSE.copy()
             )
             | no_filters
         )

@@ -15,9 +15,7 @@ class QueryBuildingBlock:
     def build(self) -> str:
         return self.builder.build()
 
-    def table(
-        self, table_name: str
-    ) -> SubQueryBuildingBlock:
+    def table(self, table_name: str) -> SubQueryBuildingBlock:
         return SubQueryBuildingBlock(self.builder, table_name)
 
 
@@ -32,7 +30,9 @@ class SubQueryBuildingBlock:
         )
 
     def opt_where(self, field_name: str) -> WhereBuildingBlock:
-        return WhereBuildingBlock(self.builder, self.table_name, field_name, is_optional=False)
+        return WhereBuildingBlock(
+            self.builder, self.table_name, field_name, is_optional=False
+        )
 
     def limit(self, limit: int) -> SubQueryBuildingBlock:
         self.builder = self.builder.with_limit(self.table_name, limit)
@@ -48,9 +48,7 @@ class SubQueryBuildingBlock:
     def build(self):
         return QueryBuildingBlock(self.builder).build()
 
-    def table(
-        self, table_name: str
-    ) -> SubQueryBuildingBlock:
+    def table(self, table_name: str) -> SubQueryBuildingBlock:
         return SubQueryBuildingBlock(self.builder, table_name)
 
 
