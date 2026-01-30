@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-import json
-
 from gql_dynamic_query_builder.core.grammar.query import prepare_query_grammar
 from gql_dynamic_query_builder.core.helpers import (
-    construct_operation_value_string,
+    ALLOWED_VALUES,
+    build_clause_dict,
+    build_or_and_connected_where_clause_dict_list,
+    construct_filter_parameters_except_where_clause_string,
+    construct_or_and_connected_where_clauses,
     construct_where_clause_string,
+    determine_clause,
     handle_skip_if_none,
-    recursive_dict_merge, construct_filter_parameters_except_where_clause_string,
+    recursive_dict_merge,
 )
 
 
@@ -15,6 +18,7 @@ class GQLDynamicQueryBuilder:
     def __init__(self, query: str):
         self.query: str = query
         self.where_clauses: dict[str, dict[str, dict | str]] = {}
+        self.or_where_clauses: dict[str, list[dict[str, dict | str]]] = {}
         self.processed_query = query
         self.limits: dict = {}
         self.offsets: dict = {}
@@ -22,22 +26,16 @@ class GQLDynamicQueryBuilder:
     def update_where_clauses(
         self, table_name: str, field_name: str, clause: str
     ) -> None:
-        current_table_clauses = (
-            self.where_clauses[table_name]
-            if self.where_clauses.get(table_name, None)
-            else {}
-        )
-        fields = field_name.split('.')
+        current_table_clauses = self.where_clauses.get(table_name, {})
 
-        clause_dict = {fields[-1]: f'{fields[-1]}: {clause}'}
-        for field in reversed(fields[:-1]):
-            clause_dict = {field: clause_dict}
+        clause_dict = build_clause_dict(field_name, clause)
 
         recursive_dict_merge(current_table_clauses, clause_dict)
         self.where_clauses[table_name] = current_table_clauses
 
-
-    def with_limit(self, table_name: str, limit: int, skip_if_none: bool = False) -> GQLDynamicQueryBuilder:
+    def with_limit(
+        self, table_name: str, limit: int, skip_if_none: bool = False
+    ) -> GQLDynamicQueryBuilder:
         if limit is None:
             handle_skip_if_none(skip_if_none)
         elif self.limits.get(table_name, None):
@@ -46,7 +44,9 @@ class GQLDynamicQueryBuilder:
             self.limits.update({table_name: limit})
         return self
 
-    def with_offset(self, table_name: str, offset: int, skip_if_none: bool = False) -> GQLDynamicQueryBuilder:
+    def with_offset(
+        self, table_name: str, offset: int, skip_if_none: bool = False
+    ) -> GQLDynamicQueryBuilder:
         if offset is None:
             handle_skip_if_none(skip_if_none)
         if self.offsets.get(table_name, None):
@@ -55,38 +55,38 @@ class GQLDynamicQueryBuilder:
             self.offsets.update({table_name: offset})
         return self
 
+    # (field1, ((field2, field3), field4), field5) for _or --> field1
+    # or ((field2 or field3) and field4) or field5
+    # same for value: (value/values1, ((value/values2 ... and operation
+    # store as tree or dict with lists of self.where_clauses like dicts
+    # in DSL use .or() to construct or blocks (ands maybe implicit) - new
+    # where() method to use in .or(where()..., where()...)
+    # potentially merge or_where_clauses and where_clauses and start with an
+    # and layer as top layer (instead of _or)
+    # potentially outsource dictionary/where clause building to own class,
+    # which will be heavy on dict/list/string operations
     def with_where_clause(
         self,
         table_name: str,
         field_name: str,
-        value: str | int | list[int] | list[str],
+        value: ALLOWED_VALUES,
         operation: str | list[str],
         skip_if_none: bool = False,
+        wrap_in_or: bool = False,
     ) -> GQLDynamicQueryBuilder:
         if value is None:
             return handle_skip_if_none(skip_if_none, self)
 
-        if isinstance(value, list):
-            if isinstance(operation, list):
-                pairs = [
-                    construct_operation_value_string(v, o)
-                    for v, o in zip(value, operation, strict=True)
-                ]
-                self.update_where_clauses(
-                    table_name, field_name, f'{{{" ".join(pairs)}}}'
-                )
-            else:
-                value = json.dumps(value)
-                self.update_where_clauses(
-                    table_name, field_name, f'{{{operation}: {value}}}'
-                )
+        if not wrap_in_or:
+            clause = determine_clause(value, operation)
+            self.update_where_clauses(table_name, field_name, clause)
         else:
-            if isinstance(operation, list):
-                raise TypeError('Operation should be scalar if value is scalar')
-            self.update_where_clauses(
-                table_name,
-                field_name,
-                f'{{{construct_operation_value_string(value, operation)}}}',
+            existing_or_clauses = self.or_where_clauses.get(table_name, [])
+            clause_dict_nested_list = build_or_and_connected_where_clause_dict_list(
+                field_name, value, operation
+            )
+            self.or_where_clauses[table_name] = (
+                existing_or_clauses + clause_dict_nested_list
             )
 
         return self
@@ -103,28 +103,41 @@ class GQLDynamicQueryBuilder:
         else:
             for table_name, clause in clauses.items():
                 if self.where_clauses.get(table_name, None):
-                    self.where_clauses[table_name].update(
-                        {'explicit_clause': clause}
-                    )
+                    self.where_clauses[table_name].update({'explicit_clause': clause})
                 else:
-                    self.where_clauses.update(
-                        {table_name: {'explicit_clause': clause}}
-                    )
+                    self.where_clauses.update({table_name: {'explicit_clause': clause}})
         return self
 
     def build(self) -> str:
-        for (
-            table_name
-        ) in set(list(self.where_clauses.keys()) + list(self.limits.keys()) + list(self.offsets.keys())):
+        for table_name in set(
+            list(self.where_clauses.keys())
+            + list(self.limits.keys())
+            + list(self.offsets.keys())
+            + list(self.or_where_clauses.keys())
+        ):
             nested_and_explicit_where_clauses = self.where_clauses.get(table_name, {})
             where_clauses = construct_where_clause_string(
                 nested_and_explicit_where_clauses
             )
 
+            or_where_clauses = self.or_where_clauses.get(table_name, None)
+            or_where_clauses = (
+                construct_or_and_connected_where_clauses(or_where_clauses, '_or')
+                if or_where_clauses
+                else None
+            )
+
             limit = self.limits.get(table_name, None)
             offset = self.offsets.get(table_name, None)
-            filter_parameters_except_where_clause = construct_filter_parameters_except_where_clause_string(limit, offset)
-            query_grammar = prepare_query_grammar(table_name, where_clauses, filter_parameters_except_where_clause)
+
+            filter_parameters_except_where_clause = (
+                construct_filter_parameters_except_where_clause_string(limit, offset)
+            )
+            query_grammar = prepare_query_grammar(
+                table_name,
+                where_clauses + or_where_clauses,
+                filter_parameters_except_where_clause,
+            )
             self.processed_query = query_grammar.transform_string(self.processed_query)
 
         return self.processed_query
