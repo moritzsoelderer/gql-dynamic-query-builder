@@ -73,8 +73,8 @@ class TestGQLDynamicQueryBuilderNestedOrAndClauses:
                     'subquery_to_test_body_arg_4',
                 ),
             ),
-            ('test_1', (('test_2', 'test_3'), 'test_4')),
-            ('_eq', (('_gt', '_lte'), '_is_null')),
+            ('test_1', (('test_2', ['test_3', "test_4"]), ['test_5', 'test_6'])),
+            ('_eq', (('_gt', ['_lte', '_gte']), '_in')),
             wrap_in_or=True,
         )
         result = builder.build()
@@ -85,9 +85,9 @@ class TestGQLDynamicQueryBuilderNestedOrAndClauses:
                 {_and: [
                      {_or: [
                             {subquery_to_test_body_arg_2: {_gt: "test_2"}}
-                            {subquery_to_test_body_arg_3: {_lte: "test_3"}}
+                            {subquery_to_test_body_arg_3: {_lte: "test_3" _gte: "test_4"}}
                         ]}
-                        {subquery_to_test_body_arg_4: {_is_null: "test_4"}}
+                        {subquery_to_test_body_arg_4: {_in: ["test_5", "test_6"]}}
                     ]
                 }
             ]
