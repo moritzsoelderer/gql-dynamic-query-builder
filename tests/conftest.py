@@ -1,3 +1,5 @@
+import re
+
 from graphql import GraphQLSyntaxError, parse
 
 query_with_subquery_before_and_after = (
@@ -97,3 +99,7 @@ def is_valid_gql(query: str) -> bool:
     except GraphQLSyntaxError as e:
         print(e)
         return False
+
+
+def normalize(s):
+    return re.sub(r'\s+', '', s).strip()
