@@ -31,7 +31,7 @@ class SubQueryBuildingBlock:
 
     def opt_where(self, field_name: str) -> WhereBuildingBlock:
         return WhereBuildingBlock(
-            self.builder, self.table_name, field_name, is_optional=False
+            self.builder, self.table_name, field_name, is_optional=True
         )
 
     def limit(self, limit: int) -> SubQueryBuildingBlock:
