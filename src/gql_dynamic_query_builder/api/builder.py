@@ -55,16 +55,6 @@ class GQLDynamicQueryBuilder:
             self.offsets.update({table_name: offset})
         return self
 
-    # (field1, ((field2, field3), field4), field5) for _or --> field1
-    # or ((field2 or field3) and field4) or field5
-    # same for value: (value/values1, ((value/values2 ... and operation
-    # store as tree or dict with lists of self.where_clauses like dicts
-    # in DSL use .or() to construct or blocks (ands maybe implicit) - new
-    # where() method to use in .or(where()..., where()...)
-    # potentially merge or_where_clauses and where_clauses and start with an
-    # and layer as top layer (instead of _or)
-    # potentially outsource dictionary/where clause building to own class,
-    # which will be heavy on dict/list/string operations
     def with_where_clause(
         self,
         table_name: str,
