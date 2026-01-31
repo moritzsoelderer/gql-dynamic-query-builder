@@ -7,7 +7,7 @@ from tests.conftest import ALL_QUERIES
 
 class TestDSLBehavesAsBuilder:
     @pytest.mark.parametrize('query,subquery_to_test', ALL_QUERIES)
-    def test_l(self, query, subquery_to_test):
+    def test_dsl_behaves_as_builder(self, query, subquery_to_test):
         result_dsl = (
             dynamic_query(query)
             .table('subquery_to_test')
