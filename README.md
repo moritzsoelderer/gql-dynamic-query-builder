@@ -17,6 +17,72 @@ as input and inserts the respective clauses if a value is presented, and does no
 This avoids nasty, error-prone, string concatenations while avoiding heavy-weight ASTs and the necessity
 of schema declarations as with [gql-DSL](https://gql.readthedocs.io/en/v3.0.0/modules/dsl.html).
 
+## New in v1.2.0
+
+**Support for `_and` & `_or` operations**:
+
+DSL:
+~~~
+result = (
+    dynamic_query(query)
+    .table('product')
+    ._or([
+        _and((
+            where('name', is_optional=True)
+            ._eq('abc'),
+            where('price')
+            ._gt(10)
+        )),
+        where('name')
+        ._ilike('def'),
+        where('brand')
+        ._eq('my_favorite_brand'),
+        where('tag')
+        ._in(['technology', 'houselhold']),
+        ]
+    )
+    .build()
+)
+~~~
+
+**Note:** With the `is_optional` flag set to `True` in a `where` subquery,
+it is not included in the generated query-string if the provided value is 'None'.
+
+builder:
+~~~
+    builder.with_where_clause(
+        'product',
+        (
+            ('name', 'price'),
+            'name',
+            'brand',
+            'tag'
+        ),
+        (('abc', 10), 'def', 'my_favorite_brand', ['technology', 'houselhold']),
+        (('_eq', '_gt'), '_ilike', '_eq', '_in')),
+        skip_if_none=((True, False), False, False, False)
+        wrap_in_or=True,
+    )
+~~~
+The builder works by alternatingly apply `_or` & `_and` operations
+based on the tuple structure, beginning with `_or`. E.g.
+`(field_1, (field_2, (field_3, field_4))` results in a clause like:
+~~~
+_or {[
+    field_1 ...
+    _and {[
+        field_2 ...
+        _or {[
+            field_3 ...
+            field_4 ...
+        ]}
+    ]}
+    ]}
+~~~
+
+This is a working system, yet too unreadable for production code.
+Therefore, it is highly encouraged to use the DSL for complicated queries.
+
 ## Usage
 
 All a user should be interacting with is located in the `src.api` package.
@@ -95,8 +161,8 @@ through the following:
 
 ~~~
     result = (dynamic_query(query).table('subquery_to_test')
-                  .where('test', is_optional=True).
-                  _in(['a', 'b', 'c'])
+                  .where('test', is_optional=True)
+                  ._in(['a', 'b', 'c'])
                   .offset(15)
                   .limit(25)
                   .where('test2')
