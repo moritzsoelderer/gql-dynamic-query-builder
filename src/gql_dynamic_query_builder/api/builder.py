@@ -73,7 +73,7 @@ class GQLDynamicQueryBuilder:
         else:
             existing_or_clauses = self.or_where_clauses.get(table_name, [])
             clause_dict_nested_list = build_or_and_connected_where_clause_dict_list(
-                field_name, value, operation
+                field_name, value, operation, skip_if_none
             )
             self.or_where_clauses[table_name] = (
                 existing_or_clauses + clause_dict_nested_list

@@ -46,3 +46,43 @@ class TestDSLNestedOrAndClauses:
         assert normalize(expected) in normalize(result)
         assert is_valid_gql(result)
 
+    @pytest.mark.parametrize('query,subquery_to_test', ALL_QUERIES)
+    def test_dsl_build_nested_or_and_third_level_clause_with_none(self, query, subquery_to_test):
+        result = (
+            dynamic_query(query)
+            .table('subquery_to_test')
+            ._or([
+                _and((
+                    where('test')
+                    ._eq(1),
+                    where('test2', is_optional=True)
+                    ._eq(None)
+                )),
+                _or((
+                    where('test3')
+                    ._eq(3),
+                    where('test4')
+                    ._eq(4)
+                )),
+                where('test5')
+                ._eq(5),
+            ]
+            )
+            .build()
+        )
+
+        expected = """
+            _or: [
+                    {_and: [
+                            {test: {_eq: 1}}
+                        ]
+                    } 
+                    {test3: {_eq: 3}}
+                    {test4: {_eq: 4}}
+                    {test5: {_eq: 5}}
+                ]
+        """
+        assert subquery_to_test not in result
+        assert normalize(expected) in normalize(result)
+        assert is_valid_gql(result)
+

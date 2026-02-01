@@ -55,7 +55,7 @@ def handle_skip_if_none(skip_if_none: bool, to_return=None):
         return to_return
     else:
         raise ValueError(
-            'Encountered None value in with_where_clause - '
+            'Encountered None value - '
             'if you want to skip it set skip_if_none=True'
         )
 
@@ -89,14 +89,22 @@ def build_clause_dict(field_name: str, clause: str) -> dict:
     return clause_dict
 
 
-def build_or_and_connected_where_clause_dict_list(field_names, values, operations):
+def build_or_and_connected_where_clause_dict_list(field_names: tuple, values: tuple, operations: tuple, skip_if_none:  tuple) -> dict:
     clause_dicts = []
     for i, field_name in enumerate(field_names):
         if isinstance(field_name, tuple):
             clause_dict_list = build_or_and_connected_where_clause_dict_list(
-                field_name, values[i], operations[i]
+                field_name, values[i], operations[i], skip_if_none[i]
             )
             clause_dicts.append(clause_dict_list)
+        elif not values[i]:
+            if skip_if_none[i]:
+                continue
+            else:
+                raise ValueError(
+                    'Encountered None value - '
+                    'if you want to skip it set skip_if_none=True'
+                )
         else:
             clause = determine_clause(values[i], operations[i])
             clause_dict = build_clause_dict(field_name, clause)
