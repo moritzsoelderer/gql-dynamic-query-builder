@@ -4,7 +4,6 @@ from gql_dynamic_query_builder.api.dsl.building_blocks.helpers import LAZY_WHERE
 
 
 class LazyWhereBlock:
-
     def __init__(self, field_name: str, is_optional: bool):
         self.field_name = field_name
         self.is_optional = is_optional

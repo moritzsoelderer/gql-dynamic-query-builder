@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 LAZY_WHERE_INFO = tuple[str, str | float | int, str, bool]
 
 
-def purge_where_info(to_conjunct: Iterable[LAZY_WHERE_INFO | AndLazyWhereInfo | OrLazyWhereInfo], to_flatten: type[AndLazyWhereInfo | OrLazyWhereInfo]):
-    not_to_flatten = AndLazyWhereInfo if to_flatten == OrLazyWhereInfo else OrLazyWhereInfo
+def purge_where_info(
+    to_conjunct: Iterable[LAZY_WHERE_INFO | AndLazyWhereInfo | OrLazyWhereInfo],
+    to_flatten: type[AndLazyWhereInfo | OrLazyWhereInfo],
+):
+    not_to_flatten = (
+        AndLazyWhereInfo if to_flatten == OrLazyWhereInfo else OrLazyWhereInfo
+    )
     purged = []
     for c in to_conjunct:
         if isinstance(c, not_to_flatten):
@@ -22,12 +27,16 @@ def purge_where_info(to_conjunct: Iterable[LAZY_WHERE_INFO | AndLazyWhereInfo | 
 def recursive_transpose(t):
     if not t or not isinstance(t[0], tuple | AndLazyWhereInfo | OrLazyWhereInfo):
         return t
-    return tuple(zip(*[
-        recursive_transpose(x.info)
-        if isinstance(x, AndLazyWhereInfo | OrLazyWhereInfo)
-        else recursive_transpose(x)
-        for x in t
-    ]))
+    return tuple(
+        zip(
+            *[
+                recursive_transpose(x.info)
+                if isinstance(x, AndLazyWhereInfo | OrLazyWhereInfo)
+                else recursive_transpose(x)
+                for x in t
+            ]
+        )
+    )
 
 
 class OrLazyWhereInfo:

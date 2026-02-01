@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 from gql_dynamic_query_builder.api.builder import GQLDynamicQueryBuilder
-from gql_dynamic_query_builder.api.dsl.building_blocks.helpers import LAZY_WHERE_INFO, purge_where_info, \
-    recursive_transpose, OrLazyWhereInfo, AndLazyWhereInfo
+from gql_dynamic_query_builder.api.dsl.building_blocks.helpers import (
+    LAZY_WHERE_INFO,
+    AndLazyWhereInfo,
+    OrLazyWhereInfo,
+    purge_where_info,
+    recursive_transpose,
+)
 
 
 class QueryBuildingBlock:
@@ -26,10 +31,14 @@ class SubQueryBuildingBlock:
         self.builder = builder
         self.table_name = table_name
 
-    def _or(self, to_conjunct: list[LAZY_WHERE_INFO | AndLazyWhereInfo]) -> SubQueryBuildingBlock:
+    def _or(
+        self, to_conjunct: list[LAZY_WHERE_INFO | AndLazyWhereInfo]
+    ) -> SubQueryBuildingBlock:
         purged_to_conjunct = purge_where_info(to_conjunct, to_flatten=OrLazyWhereInfo)
         transposed_to_conjunct = recursive_transpose(purged_to_conjunct)
-        self.builder = self.builder.with_where_clause(self.table_name, *transposed_to_conjunct, wrap_in_or=True)
+        self.builder = self.builder.with_where_clause(
+            self.table_name, *transposed_to_conjunct, wrap_in_or=True
+        )
         return self
 
     def where(self, field_name: str, is_optional: bool = False) -> WhereBuildingBlock:

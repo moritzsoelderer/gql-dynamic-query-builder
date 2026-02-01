@@ -73,7 +73,7 @@ class TestGQLDynamicQueryBuilderNestedOrAndClauses:
                     'subquery_to_test_body_arg_4',
                 ),
             ),
-            ('test_1', (('test_2', ['test_3', "test_4"]), ['test_5', 'test_6'])),
+            ('test_1', (('test_2', ['test_3', 'test_4']), ['test_5', 'test_6'])),
             ('_eq', (('_gt', ['_lte', '_gte']), '_in')),
             wrap_in_or=True,
         )
