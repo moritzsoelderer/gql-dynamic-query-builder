@@ -1,7 +1,7 @@
 [project]
 name = "gql-dynamic-query-builder"
 authors = [{name="msldrr", email="moritz.soelderer@icloud.com"}]
-version = "1.1.0"
+version = "1.2.0"
 description = "Dynamic GraphQL query builder"
 requires-python = ">=3.10"
 readme = "README.md"
